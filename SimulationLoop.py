@@ -1,5 +1,4 @@
 import os.path
-import subprocess
 import time
 
 import cv2
@@ -13,15 +12,17 @@ class SimulationLoop:
 
     def __init__(self):
         self.screenshot_folder = os.path.dirname(os.path.abspath(__file__)) + '/Screenshots/'
-        self.sleep_time_long = 1
-        self.sleep_time_short = 0.1
+        self.sleep_time_long = 0.1
+        self.sleep_time_short = 0.0
         self.sleep_time = self.sleep_time_long
         self.is_play_state = False
         self.sub_folder_name = str(int(time.time() * 1000))
-        self.adb_device = '127.0.0.1:7555'
+        self.adb_device_ip = '127.0.0.1:5555'
+        self.device = uiautomator2.connect(self.adb_device_ip)
         pass
 
     def do_screen_shot(self):
+        img = self.device.screenshot(format='opencv')
         this_screen_shot_path = self.screenshot_folder
         if self.is_play_state:
             this_screen_shot_path += self.sub_folder_name + '/'
@@ -30,11 +31,8 @@ class SimulationLoop:
             os.mkdir(this_screen_shot_path)
             pass
         this_screen_shot_path += str(int(time.time() * 1000)) + '.png'
-        command = ["adb", "-d", "shell", "screencap -p /storage/emulated/0/temp.png"]
-        subprocess.run(command)
-        command = ["adb", "-d", "pull", "/storage/emulated/0/temp.png", this_screen_shot_path]
-        subprocess.run(command)
-        pass
+        cv2.imwrite(this_screen_shot_path, img)
+        return img
 
     def judge_play_state(self):
         return False
